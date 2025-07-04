@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import useSWRMutation from 'swr/mutation';
 import { loginUser } from '@/lib/api';
