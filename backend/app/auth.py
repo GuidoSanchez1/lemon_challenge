@@ -1,13 +1,12 @@
-# app/auth.py
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from app import models, database
+from app import database, schemas, crud
 from app.config import settings
 
 # Configuración JWT
@@ -58,17 +57,19 @@ def get_db():
     finally:
         db.close()
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Credenciales inválidas",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    payload = decode_token(token)
-    if payload is None or "sub" not in payload:
-        raise credentials_exception
-
-    user = db.query(models.User).filter(models.User.email == payload["sub"]).first()
-    if user is None:
-        raise credentials_exception
+def get_current_user(token: str = Cookie(None), db: Session = Depends(get_db)) -> schemas.UserRead:
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No autenticado")
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if not isinstance(email, str) or email is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
+    
+    user = crud.get_user_by_email(db, email=email)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
     return user

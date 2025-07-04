@@ -17,7 +17,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
-    const router = useRouter();
+
     const [error, setError] = useState('');
 
     const { isLoading } = useAuth({
@@ -38,8 +38,7 @@ export default function LoginPage() {
     const onSubmit = async (data: FormData) => {
         setError('');
         try {
-            await trigger(data); // No guardamos token, ya está seteado en cookie
-            router.push('/home');
+            await trigger(data);
         } catch (err: unknown) {
             if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'detail' in err.response.data) {
                 //     console.log(err);
@@ -62,7 +61,7 @@ export default function LoginPage() {
                             Email
                         </label>
                         <input
-                            type="email"
+                            type="username"
                             {...register('email')}
                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         />

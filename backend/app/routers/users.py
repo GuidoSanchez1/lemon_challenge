@@ -4,8 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app import schemas, crud
-from app.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_db
-from datetime import timedelta
+from app.auth import create_access_token, get_current_user, get_db
 
 router = APIRouter()
 
@@ -15,6 +14,8 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    print("Intentando iniciar sesión con:", form_data.username)
+    print("Intentando iniciar sesión con:", form_data.password  )
     user = crud.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
@@ -33,6 +34,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         path="/",
     )
     return response
+
+@router.get("/me", response_model=schemas.UserRead)
+def read_current_user(current_user: schemas.UserRead = Depends(get_current_user)):
+    return current_user
 
 @router.post("/logout")
 def logout():
