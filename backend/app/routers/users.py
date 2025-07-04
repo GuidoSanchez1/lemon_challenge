@@ -5,8 +5,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app import schemas, crud
 from app.auth import create_access_token, get_current_user, get_db
+from app.config import settings
 
 router = APIRouter()
+IS_PRODUCTION = settings.ENV == "production"
 
 @router.post("/register", response_model=schemas.UserRead)
 def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -28,7 +30,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         key="token",
         value=access_token,
         httponly=True,
-        secure=True,  # solo HTTPS en producción
+        secure=IS_PRODUCTION,  # solo true si estás en producción
         samesite="lax",  # o "strict" según necesidad
         max_age=60 * 60 * 24,
         path="/",

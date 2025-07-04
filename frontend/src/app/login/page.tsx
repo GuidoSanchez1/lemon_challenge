@@ -18,7 +18,6 @@ type FormData = z.infer<typeof schema>;
 export default function LoginPage() {
 
     const [error, setError] = useState('');
-
     const { isLoading } = useAuth({
         redirectIfAuthenticated: true,
         redirectAuthenticatedTo: '/home',

@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const api = axios.create({
@@ -16,9 +17,9 @@ export async function loginUser(_: string, { arg }: { arg: { email: string; pass
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
+
     });
 
-    console.log('Login response:', response.data);
     return response.data;
 }
 
@@ -26,15 +27,6 @@ export const logoutUser = async () => {
     const response = await api.post('/users/logout');
     return response.data;
 };
-
-export async function fetchCurrentUser() {
-    try {
-        const response = await api.get('/users/me', { withCredentials: true });
-        return response.data;
-    } catch {
-        return null;
-    }
-}
 
 
 export const registerUser = async (url: string, { arg }: { arg: { email: string; password: string } }) => {

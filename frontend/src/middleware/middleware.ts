@@ -1,19 +1,30 @@
-// middleware.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest) {
-    const token = request.cookies.get('token')?.value;
-    const { pathname } = request.nextUrl;
+const protectedRoutes = ['/home']
+const publicRoutes = ['/login', '/register']
+export default async function middleware(req: NextRequest) {
+    const path = req.nextUrl.pathname
+    const isProtectedRoute = protectedRoutes.includes(path)
+    const isPublicRoute = publicRoutes.includes(path)
+    const token = req.cookies.get('token')?.value
 
-    // Redirigir si ya está autenticado
-    if ((pathname === '/login' || pathname === '/register') && token) {
-        return NextResponse.redirect(new URL('/tasks', request.url));
+    const res = NextResponse.next()
+    res.headers.set('x-debug-token', token ?? '')
+    console.log('Middleware ejecutado - PATH:', path)
+    console.log('TOKEN detectado:', token)
+    if (isProtectedRoute && !token) {
+        return NextResponse.redirect(new URL('/login', req.nextUrl))
     }
 
-    // Proteger rutas privadas
-    if (pathname.startsWith('/tasks') && !token) {
-        return NextResponse.redirect(new URL('/login', request.url));
+    if (
+        isPublicRoute && token
+    ) {
+        return NextResponse.redirect(new URL('/home', req.nextUrl))
     }
+    return res
 
-    return NextResponse.next();
+}
+
+export const config = {
+    matcher: ['/:path*'],
 }
